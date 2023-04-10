@@ -2,85 +2,62 @@ use rusqlite::{Connection, Result};
 
 #[derive(Debug)]
 struct User {
-    username: String,
-    password: String,
+    id: i32,
+    name: String,
+    age: i32,
+}
+
+fn create_users_table(conn: &Connection) -> Result<()> {
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS users (
+                  id INTEGER PRIMARY KEY,
+                  name TEXT NOT NULL,
+                  age INTEGER NOT NULL
+                  )",
+        [],
+    )?;
+    Ok(())
+}
+
+fn insert_dummy_users(conn: &Connection) -> Result<()> {
+    conn.execute(
+        "INSERT INTO users (name, age) VALUES
+                  ('Alice', 24),
+                  ('Bob', 30),
+                  ('Charlie', 18)",
+        [],
+    )?;
+    Ok(())
+}
+
+fn get_users_by_name(conn: &Connection, name: &str) -> Result<Vec<User>> {
+    let query = format!("SELECT id, name, age FROM users WHERE name = '{}'", name);
+    let mut stmt = conn.prepare(&query)?;
+    let user_iter = stmt.query_map([], |row| {
+        Ok(User {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            age: row.get(2)?,
+        })
+    })?;
+    let mut users = vec![];
+    for user in user_iter {
+        users.push(user?);
+    }
+    Ok(users)
 }
 
 fn main() -> Result<()> {
-    let conn = Connection::open_in_memory()?;
+    let conn = Connection::open("users.db")?;
+    create_users_table(&conn)?;
+    insert_dummy_users(&conn)?;
 
-    conn.execute(
-        "CREATE TABLE users (
-            username TEXT PRIMARY KEY,
-            password TEXT NOT NULL
-        )",
-        (),
-    )?;
+    // Simulate user input
+    let name = "Charlie' OR 1=1; --";
 
-    let user1 = User {
-        username: "alice".to_string(),
-        password: "123456".to_string(),
-    };
-    conn.execute(
-        "INSERT INTO users (username, password) VALUES (?1, ?2)",
-        (&user1.username, &user1.password),
-    )?;
-
-    let user2 = User {
-        username: "bob".to_string(),
-        password: "password123".to_string(),
-    };
-    conn.execute(
-        "INSERT INTO users (username, password) VALUES (?1, ?2)",
-        (&user2.username, &user2.password),
-    )?;
-
-    println!("Please enter your username:");
-    let mut username = String::new();
-    std::io::stdin()
-        .read_line(&mut username)
-        .expect("Failed to read username");
-
-    println!("Please enter your password:");
-    let mut password = String::new();
-    std::io::stdin()
-        .read_line(&mut password)
-        .expect("Failed to read password");
-
-    let mut stmt =
-        conn.prepare("SELECT username, password FROM users WHERE username = ?1 AND password = ?2")?;
-    let user_iter = stmt.query_map((&username.trim(), &password.trim()), |row| {
-        Ok(User {
-            username: row.get(0)?,
-            password: row.get(1)?,
-        })
-    })?;
-
-    if user_iter.count() > 0 {
-        println!("Login successful!");
-    } else {
-        println!("Incorrect username or password.");
-    }
-
-    //unsafe rust code for sql injection attack. (not recommended)
-    // let _stmt = conn.prepare(
-    //     "SELECT username, password FROM users WHERE username ={username} AND password = {password}",
-    // )?;
-
-    //' OR 1=1; DROP TABLE users; --
-
-    let mut stmt = conn.prepare("SELECT username, password FROM users")?;
-    let user_iter = stmt.query_map([], |row| {
-        Ok(User {
-            username: row.get(0)?,
-            password: row.get(1)?,
-        })
-    })?;
-
-    println!("List of users in the database:");
-    for user in user_iter {
-        println!("{:?}", user.unwrap());
-    }
+    // Demonstrate SQL injection vulnerability
+    let users = get_users_by_name(&conn, name)?;
+    println!("{:?}", users);
 
     Ok(())
 }
