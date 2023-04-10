@@ -37,11 +37,15 @@ fn main() -> Result<()> {
 
     println!("Please enter your username:");
     let mut username = String::new();
-    std::io::stdin().read_line(&mut username);
+    std::io::stdin()
+        .read_line(&mut username)
+        .expect("Failed to read username");
 
     println!("Please enter your password:");
     let mut password = String::new();
-    std::io::stdin().read_line(&mut password);
+    std::io::stdin()
+        .read_line(&mut password)
+        .expect("Failed to read password");
 
     let mut stmt =
         conn.prepare("SELECT username, password FROM users WHERE username = ?1 AND password = ?2")?;
