@@ -33,3 +33,11 @@ If you would like to contribute to this project, please follow the following ste
 4. Commit your changes.
 5. Push your changes to your fork.
 6. Create a merge request.
+
+## Integer Overflows in Rust
+
+In Rust, integer overflows can occur when the result of an arithmetic operation on an integer type exceeds the maximum value that can be represented by the type. By default, Rust will perform a panic when an integer overflow occurs. However, Rust provides several ways to handle integer overflows explicitly and safely, such as using the `wrapping_*`, `checked_*`, and `overflowing_*` methods.
+
+The `wrapping_*` methods perform the operation and wrap around the integer if an overflow occurs. The `checked_*` methods return an Option that contains the result of the operation if it does not overflow, or None if an overflow occurs. `The overflowing_*` methods return a tuple containing the result of the operation and a boolean flag indicating whether an overflow occurred.
+
+To ensure that your Rust code is secure and resilient to integer overflows, you should handle integer overflows explicitly and safely, rather than relying on undefined behavior or panicking. In our project, we have included examples of Rust code vulnerable to integer overflow attacks, based on TUM research, along with unit tests that check for unsafe Rust code and prompt the user on why their code is unsafe and how to fix it. We encourage you to use these examples and resources to learn more about secure software development with Rust.
