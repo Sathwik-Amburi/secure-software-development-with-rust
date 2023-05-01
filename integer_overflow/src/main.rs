@@ -1,28 +1,30 @@
 use std::io;
 
 fn main() {
-    let mut balance = 100.0; // initial balance
-    println!("Current balance: ${}", balance);
-
+    let mut balance: u32 = 1000;
     loop {
-        // Prompt user for withdrawal amount
-        println!("Enter withdrawal amount: ");
-        let mut withdrawal_amount = String::new();
+        println!("Your balance is: {}", balance);
+        println!("Please input withdrawal amount: ");
+
+        let mut input = String::new();
         io::stdin()
-            .read_line(&mut withdrawal_amount)
+            .read_line(&mut input)
             .expect("Failed to read line");
-
-        // Parse withdrawal amount as a float
-        let withdrawal_amount: f64 = withdrawal_amount.trim().parse().expect("Invalid input");
-
-        // Check if withdrawal amount is greater than balance
-        if withdrawal_amount > balance {
-            println!("Insufficient funds");
+        let amount: u32 = match input.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+        if amount > 0 {
+            match balance.checked_sub(amount) {
+                Some(new_balance) => balance = new_balance,
+                None => {
+                    println!("Error: withdrawal amount causes integer overflow");
+                    continue;
+                }
+            }
+        } else {
+            println!("Error: invalid amount");
             continue;
         }
-
-        // Update account balance
-        balance -= withdrawal_amount;
-        println!("Withdrawal successful. New balance: ${}", balance);
     }
 }
