@@ -54,6 +54,7 @@ fn main() {
             // Intentionally not zeroizing the sensitive data before deallocating the memory
             // zeriozing the sensitive data before deallocating the memory
             // (*sensitive_data_ptr).zeroize();
+            (*sensitive_data_ptr).use_sensitive_data();
             dealloc(sensitive_data_ptr as *mut u8, layout);
         }
     }
