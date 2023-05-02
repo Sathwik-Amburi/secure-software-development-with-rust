@@ -67,3 +67,127 @@ To prevent TOCTOU attacks in Rust, you can take the following steps:
 5. `Use proper access controls`: Ensure that your application enforces proper access controls, such as file system permissions and user authentication. This can limit the potential impact of a successful TOCTOU attack.
 
 In summary, although Rust provides many safety and concurrency features, TOCTOU attacks are still possible, especially when interacting with external resources. To prevent these attacks, use atomic operations, lock resources, combine check and use steps into single operations, reduce the time window between checking and using resources, and enforce proper access controls.
+
+## Resource Leakage in Rust
+
+### introduction
+
+Resource leakage is a common issue in software development where system resources, such as memory, file handles, or network connections, are not properly released after being used. This can lead to various problems, such as performance degradation, system instability, or even security vulnerabilities.
+
+In this guide, we will discuss resource leakage in Rust, its potential consequences, and how to prevent it.
+
+### What is resource leakage?
+
+Resource leakage occurs when a program does not correctly release a system resource after it has been used, leading to the resource being unavailable to other parts of the system or other programs. Common examples of resources that can be leaked include memory, file handles, and network connections.
+
+In Rust, resource leakage can be caused by improper handling of memory allocation and deallocation, not closing file handles, or not managing network connections correctly.
+
+### Consequences of Resource Leakage
+
+Resource leakage can have several negative effects on a system, including:
+
+1. `Performance degradation`: Leaking resources, such as memory or file handles, can cause a system to become slow or unresponsive over time, as the number of leaked resources accumulates.
+2. `System instability`: In extreme cases, resource leakage can lead to system crashes or hangs, as the system becomes unable to allocate new resources due to resource exhaustion.
+3. `Security vulnerabilities`: Resource leakage can lead to security vulnerabilities, such as information disclosure or denial of service, if sensitive data is not properly cleaned up or if an attacker is able to exhaust system resources.
+
+### Preventing Resource Leakage in Rust
+
+Rust's memory safety guarantees and its ownership system help prevent many common resource leakage issues. However, it is still possible to leak resources in Rust, especially when dealing with unsafe code or external resources like file handles or network connections. Here are some general guidelines to prevent resource leakage in Rust:
+
+1. `Use RAII (Resource Acquisition Is Initialization) pattern`: In Rust, the RAII pattern is commonly used to manage resources by tying their lifetime to the lifetime of an object. When the object goes out of scope, the resource is automatically released. This can help ensure that resources are properly released, even in the presence of errors or early returns.
+
+For example, the std::fs::File struct in the Rust standard library automatically closes the file handle when it goes out of scope:
+
+```rust
+use std::fs::File;
+
+fn main() {
+    let file = File::open("example.txt").unwrap();
+    // Perform file operations...
+
+    // File is automatically closed when `file` goes out of scope.
+}
+
+```
+
+2. `Properly handle unsafe code`: When using unsafe code, it is essential to ensure that resources are properly managed. Be cautious when working with raw pointers, memory allocation, or external libraries, and always follow best practices and documentation for the code you are working with.
+
+For example, when working with raw memory allocation, ensure that memory is properly deallocated after use:
+
+```rust
+use std::alloc::{alloc, dealloc, Layout};
+use std::mem::{size_of, align_of};
+
+let layout = Layout::from_size_align(size_of::<u32>(), align_of::<u32>()).unwrap();
+let ptr = unsafe { alloc(layout) as *mut u32 };
+
+if !ptr.is_null() {
+    unsafe {
+        *ptr = 42;
+
+        // Perform operations with the allocated memory...
+
+        // Properly deallocate the memory
+        dealloc(ptr as *mut u8, layout);
+    }
+}
+```
+
+3. `Clean up sensitive data`: When working with sensitive data, such as encryption keys or passwords, it is important to ensure that the data is properly zeroized (overwritten with zeros or another constant value) before deallocating or releasing the associated memory. This helps prevent information disclosure by ensuring that sensitive data is not left behind in memory after it is no longer needed.
+
+In Rust, the zeroize crate provides a secure and efficient way to zeroize sensitive data, taking care to avoid compiler optimizations that could potentially remove the zeroization:
+
+```rust
+use zeroize::Zeroize;
+
+struct SensitiveData {
+    data: [u8; 64],
+}
+
+impl SensitiveData {
+    fn new() -> Self {
+        SensitiveData {
+            data: *b"Sensitive information: secret_key=ABC123!\0",
+        }
+    }
+}
+
+impl Zeroize for SensitiveData {
+    fn zeroize(&mut self) {
+        self.data.zeroize();
+    }
+}
+
+fn main() {
+    let mut sensitive_data = SensitiveData::new();
+
+    // Perform operations with the sensitive data...
+
+    // Properly zeroize the sensitive data before it goes out of scope
+    sensitive_data.zeroize();
+}
+
+```
+
+4. `Handle errors gracefully`: Proper error handling is essential for preventing resource leakage. Ensure that your code correctly handles errors and releases resources even in the case of failure. Rust's error handling mechanisms, such as Result and ? operator, can help you write more robust code that releases resources correctly.
+
+```rust
+
+use std::fs::File;
+use std::io::{Read, Error};
+
+fn read_file_contents(file_path: &str) -> Result<String, Error> {
+    let mut file = File::open(file_path)?;
+    let mut contents = String::new();
+
+    // File handle is properly closed even if an error occurs during reading
+    file.read_to_string(&mut contents)?;
+
+    Ok(contents)
+}
+
+```
+
+### Conclusion
+
+Resource leakage can lead to performance issues, system instability, and security vulnerabilities. In Rust, the language's memory safety guarantees and ownership system help prevent many common resource leakage problems. However, it is still essential to follow best practices for managing resources, handling unsafe code, cleaning up sensitive data, and handling errors. By doing so, you can write more robust and secure Rust applications that effectively manage system resources.
