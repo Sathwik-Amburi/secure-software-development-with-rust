@@ -1,76 +1,48 @@
-// use std::env;
-// use std::process::Command;
-
-// fn main() {
-//     let args: Vec<String> = env::args().collect();
-//     let file_name = &args[1];
-
-//     let output = Command::new("ls")
-//         .arg(file_name)
-//         .output()
-//         .expect("Failed to execute command");
-
-//     println!("{}", String::from_utf8_lossy(&output.stdout));
-// }
-
-// **********************************************************************************************************
-
-// use std::env;
-// use std::fs;
-// use std::io::ErrorKind;
-
-// fn main() {
-//     let args: Vec<String> = env::args().collect();
-//     if args.len() < 2 {
-//         println!("Usage: {} <directory>", args[0]);
-//         return;
-//     }
-
-//     let dir_name = &args[1];
-
-//     match fs::read_dir(dir_name) {
-//         Ok(entries) => {
-//             for entry_result in entries {
-//                 match entry_result {
-//                     Ok(entry) => {
-//                         let entry_path = entry.path();
-//                         if let Some(file_name) = entry_path.file_name() {
-//                             println!("{}", file_name.to_string_lossy());
-//                         }
-//                     }
-//                     Err(e) => {
-//                         eprintln!("Error: {}", e);
-//                     }
-//                 }
-//             }
-//         }
-//         Err(e) => {
-//             if e.kind() == ErrorKind::NotFound {
-//                 eprintln!("Error: Directory not found");
-//             } else {
-//                 eprintln!("Error: {}", e);
-//             }
-//         }
-//     }
-// }
-
-// **********************************************************************************************************
-
-use shell_escape::escape;
-use std::borrow::Cow;
-use std::env;
+use std::io;
 use std::process::Command;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let file_name = &args[1];
+    println!("Enter a file name:");
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read input");
+    let filename = input.trim();
 
-    let escaped_file_name = escape(Cow::Borrowed(file_name));
-
-    let output = Command::new("ls")
-        .arg(&*escaped_file_name)
+    // let command = format!("rm -rf test-folder/{} file.txt", filename);
+    let command = format!(
+        "cat test-folder/{}; rm -rf test-folder/important.txt",
+        filename
+    );
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(&command)
         .output()
         .expect("Failed to execute command");
 
-    println!("{}", String::from_utf8_lossy(&output.stdout));
+    println!("Output: {:?}", output);
 }
+
+// use std::fs::File;
+// use std::io::prelude::*;
+
+// fn main() {
+//     println!("Enter a file name:");
+//     let mut input = String::new();
+//     std::io::stdin()
+//         .read_line(&mut input)
+//         .expect("Failed to read input");
+//     let filename = input.trim();
+
+//     match File::open(&filename) {
+//         Ok(mut file) => {
+//             let mut contents = String::new();
+//             file.read_to_string(&mut contents)
+//                 .expect("Failed to read file");
+//             println!("File contents:\n{}", contents);
+//         }
+//         Err(e) => {
+//             println!("Error opening file: {}", e);
+//         }
+//     }
+// }
