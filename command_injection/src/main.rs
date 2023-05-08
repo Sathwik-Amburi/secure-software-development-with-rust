@@ -10,13 +10,10 @@ fn main() {
     let filename = input.trim();
 
     // let command = format!("rm -rf test-folder/{} file.txt", filename);
-    let command = format!(
-        "cat test-folder/{}; rm -rf test-folder/important.txt",
-        filename
-    );
+    let command = format!("ping -c4 {}", filename);
     let output = Command::new("sh")
         .arg("-c")
-        .arg(&command)
+        .arg(command)
         .output()
         .expect("Failed to execute command");
 
