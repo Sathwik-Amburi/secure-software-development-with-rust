@@ -47,15 +47,23 @@ fn main() {
         unsafe {
             // Initialize the sensitive data
             sensitive_data_ptr.write(SensitiveData::new());
-
+            println!("Sensitive data allocated at: {:p}", sensitive_data_ptr);
+            println!("Reading Sensitive data from: {:p}", sensitive_data_ptr);
             // Perform some operations with the sensitive data
             (*sensitive_data_ptr).use_sensitive_data();
 
             // Intentionally not zeroizing the sensitive data before deallocating the memory
             // zeriozing the sensitive data before deallocating the memory
-            // (*sensitive_data_ptr).zeroize();
+            println!("Zeroizing sensitive data at: {:p}", sensitive_data_ptr);
+            (*sensitive_data_ptr).zeroize();
+            println!(
+                "Trying to read sensitive data from: {:p}",
+                sensitive_data_ptr
+            );
             (*sensitive_data_ptr).use_sensitive_data();
+            println!("Deallocating sensitive data at: {:p}", sensitive_data_ptr);
             dealloc(sensitive_data_ptr as *mut u8, layout);
+            (*sensitive_data_ptr).use_sensitive_data();
         }
     }
 }
