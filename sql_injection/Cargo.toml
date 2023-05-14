@@ -8,3 +8,14 @@ edition = "2021"
 [dependencies]
 
 rusqlite = { version = "0.29.0", features = ["bundled"] }
+
+[lib]
+path = "src/common.rs"
+
+[[bin]]
+name = "secure"
+path = "src/secure.rs"
+
+[[bin]]
+name = "vulnerable"
+path = "src/vulnerable.rs"
