@@ -7,3 +7,16 @@ edition = "2021"
 
 [dependencies]
 shell-escape = "0.1.5"
+
+[lib]
+path = "src/shared.rs"
+
+
+
+[[bin]]
+name = "secure"
+path = "src/secure.rs"
+
+[[bin]]
+name = "vulnerable"
+path = "src/vulnerable.rs"
