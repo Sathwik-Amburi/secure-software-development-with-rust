@@ -8,9 +8,6 @@ edition = "2021"
 [dependencies]
 shell-escape = "0.1.5"
 
-[lib]
-path = "src/shared.rs"
-
 
 
 [[bin]]

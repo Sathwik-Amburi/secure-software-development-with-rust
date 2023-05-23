@@ -1,11 +1,7 @@
 use std::io;
 use std::process::Command;
-mod shared;
 
 fn main() {
-    let script_path = "./custom_commands/myutility.sh";
-    shared::make_script_executable(&script_path);
-
     println!("Enter a command to manage your lights (on/off/dim):");
     let mut input = String::new();
     io::stdin()
@@ -14,8 +10,7 @@ fn main() {
     let user_input = input.trim();
 
     let output = Command::new("sh")
-        .arg("-c")
-        .arg(script_path)
+        .arg("./custom_commands/myutility.sh")
         .arg(user_input)
         .output()
         .expect("Failed to execute command");
