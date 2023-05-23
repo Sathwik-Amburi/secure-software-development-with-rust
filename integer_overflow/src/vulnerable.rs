@@ -14,6 +14,7 @@ fn main() {
             Ok(num) => num,
             Err(_) => continue,
         };
+        println!("Withdrawing {}", amount);
         if amount > 0 {
             balance = balance - amount;
         } else {
